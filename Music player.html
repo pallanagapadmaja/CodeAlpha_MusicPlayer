@@ -1,0 +1,236 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Player</title>
+
+<style>
+body {
+    font-family: Arial;
+    background:rgb(160, 208, 240);
+    color:white;
+    display: flex;
+    justify-content: center;
+    margin-top: 50px;
+}
+
+.player {
+    width: 350px;
+    background: #f7ccf0;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 0 15px yellow;
+}
+
+h2 {
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 10px 15px;
+    margin: 10px;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: rgb(144, 140, 140);
+}
+
+input[type="range"] {
+    width: 100%;
+    margin: 10px 0;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    background: #ef66ef;
+    padding: 8px;
+    margin: 15px;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+li:hover {
+    background: #666;
+}
+
+.time {
+    display: flex;
+    justify-content: space-between;
+}
+</style>
+</head>
+
+<body>
+
+<div class="player">
+    <h2>🎵 Music Player</h2>
+
+    <h3 id="title">Song 1</h3>
+    <p id="artist">Artist 1</p>
+
+    <audio id="audio"></audio>
+
+    <input type="range" id="progress" value="0">
+
+    <div class="time">
+        <span id="current">0:00</span>
+        <span id="duration">0:00</span>
+    </div>
+
+    <div>
+        <button onclick="prevSong()">⏮</button>
+        <button id="playBtn" onclick="playPause()">▶</button>
+        <button onclick="nextSong()">⏭</button>
+    </div>
+
+    <label>Volume</label>
+    <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+
+    <h3>Playlist</h3>
+    <ul id="playlist"></ul>
+</div>
+
+<script>
+const songs = [
+    {
+        title: "Master The Blaster",
+        artist: "Anirudh Ravichander",
+        src: "master.mpeg"
+    },
+    {
+        title: "Astalakshmi Strotram",
+        artist: "Mahagatha,Sharmishtha Bhatkar,Rishiking",
+        src: "astalakshmi strotram.mp3.mpeg"
+    },
+    {
+        title: "Em Sandeham Ledu",
+        artist: "Sunitha,Kalyani Malik",
+        src: "em sandeham ledhu.mp3.mpeg"
+    },
+    {
+        title: "Naa chupe ninu vetikinadi",
+        artist: "Koti,K.S.Chitra,Sriram",
+        src: "naa chupe ninu vetikinadi.mp3.mpeg"
+    },
+    {
+        title: "Om Mahaprana Deepam",
+        artist: "Shankar Mahadevan",
+        src: "Om Mahaprana Deepam..mp3.mpeg"
+    },
+    {
+        title: "Omkaram",
+        artist: "Devi Sri Prasad,Venkata Sai",
+        src: "Omkaram.mp3.mpeg"
+    },
+    {
+        title: "Sancharame entha bagunnadi",
+        artist: "Hesham Abdul Wahab,Gorati Venkanna ",
+        src: "sancharame.mp3.mpeg"
+    },
+    {
+        title: " Unna maata cheppanivu",
+        artist: "Tippu,Harini",
+        src: "unna maata cheppaneevu.mp3.mpeg"
+    },
+    {
+        title: "Endayyah Saami",
+        artist: "Swetha Mohan,Ramajyogayyah Sastri",
+        src: "endaiah saami.mp3.mpeg"
+    }
+];
+
+let currentSong = 0;
+
+const audio = document.getElementById("audio");
+const title = document.getElementById("title");
+const artist = document.getElementById("artist");
+const progress = document.getElementById("progress");
+const volume = document.getElementById("volume");
+const playBtn = document.getElementById("playBtn");
+const playlist = document.getElementById("playlist");
+
+function loadSong(index) {
+    audio.src = songs[index].src;
+    title.innerText = songs[index].title;
+    artist.innerText = songs[index].artist;
+}
+
+function playPause() {
+    if (audio.paused) {
+        audio.play();
+        playBtn.innerText = "⏸";
+    } else {
+        audio.pause();
+        playBtn.innerText = "▶";
+    }
+}
+
+function nextSong() {
+    currentSong = (currentSong + 1) % songs.length;
+    loadSong(currentSong);
+    audio.play();
+    playBtn.innerText = "⏸";
+}
+
+function prevSong() {
+    currentSong = (currentSong - 1 + songs.length) % songs.length;
+    loadSong(currentSong);
+    audio.play();
+    playBtn.innerText = "⏸";
+}
+
+audio.addEventListener("timeupdate", () => {
+    progress.value = (audio.currentTime / audio.duration) * 100 || 0;
+
+    document.getElementById("current").innerText = formatTime(audio.currentTime);
+    document.getElementById("duration").innerText = formatTime(audio.duration);
+});
+
+progress.addEventListener("input", () => {
+    audio.currentTime = (progress.value / 100) * audio.duration;
+});
+
+volume.addEventListener("input", () => {
+    audio.volume = volume.value;
+});
+
+audio.addEventListener("ended", nextSong);
+
+function formatTime(time) {
+    if (isNaN(time)) return "0:00";
+
+    let min = Math.floor(time / 60);
+    let sec = Math.floor(time % 60);
+
+    return min + ":" + (sec < 10 ? "0" + sec : sec);
+}
+
+songs.forEach((song, index) => {
+    let li = document.createElement("li");
+    li.innerText = song.title + " - " + song.artist;
+
+    li.onclick = function() {
+        currentSong = index;
+        loadSong(index);
+        audio.play();
+        playBtn.innerText = "⏸";
+    };
+
+    playlist.appendChild(li);
+});
+
+loadSong(currentSong);
+</script>
+
+</body>
+</html>
